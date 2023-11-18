@@ -23,7 +23,6 @@ struct ImGui_ImplRuby_Data
 	double                  Time;
 	RubyWindow*             MouseWindow;
 	int						MouseCursor[ ImGuiMouseCursor_COUNT ];
-	bool                    MouseJustPressed[ImGuiMouseButton_COUNT];
 	RubyWindow*             KeyOwnerWindows[512];
 	bool                    InstalledCallbacks;
 	bool                    WantUpdateMonitors;
@@ -193,17 +192,16 @@ static void ImGui_ImplRuby_SetClipboardText(void* user_data, const char* text)
 
 void ImGui_ImplRuby_MouseButtonCallback(RubyWindow* window, int button, bool state)
 {
-	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
+	ImGuiIO& io = ImGui::GetIO();
 
-	if( state && button >= 0 && button < IM_ARRAYSIZE( bd->MouseJustPressed ) )
-		bd->MouseJustPressed[ button ] = true;
+	if( state && button >= 0 && button < ImGuiMouseButton_COUNT )
+		io.AddMouseButtonEvent( button, state );
 }
 
 void ImGui_ImplRuby_ScrollCallback( double xoffset, double yoffset)
 {
 	ImGuiIO& io = ImGui::GetIO();
-	io.MouseWheelH += ( float ) xoffset;
-	io.MouseWheel += ( float ) yoffset;
+	io.AddMouseWheelEvent( (float)xoffset, (float)yoffset );
 }
 
 void ImGui_ImplRuby_KeyCallback( RubyWindow* window, int scancode, bool state, int mods)
@@ -256,6 +254,8 @@ void ImGui_ImplRuby_MouseHoverWindowCallback( bool state )
 
 void ImGui_ImplRuby_WindowFocusCallback( RubyWindow* window, bool focused )
 {
+	ImGuiIO& io = ImGui::GetIO();
+    io.AddFocusEvent(focused != 0);
 }
 
 void ImGui_ImplRuby_CursorEnterCallback( RubyWindow* window, bool entered )
