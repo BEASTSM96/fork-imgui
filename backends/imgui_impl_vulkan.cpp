@@ -250,7 +250,9 @@ IMGUI_VULKAN_FUNC_MAP(IMGUI_VULKAN_FUNC_DEF)
 #undef IMGUI_VULKAN_FUNC_DEF
 #endif // VK_NO_PROTOTYPES
 
-#if defined(VK_VERSION_1_3) || defined(VK_KHR_dynamic_rendering)
+// For some reason on Vulkan 1.2 'VK_KHR_dynamic_rendering' is defined however the structs VkRenderingInfo is not.
+// So I have removed the or of 'VK_KHR_dynamic_rendering'
+#if defined(VK_VERSION_1_3)
 #define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 static PFN_vkCmdBeginRenderingKHR   ImGuiImplVulkanFuncs_vkCmdBeginRenderingKHR;
 static PFN_vkCmdEndRenderingKHR     ImGuiImplVulkanFuncs_vkCmdEndRenderingKHR;
@@ -1188,42 +1190,6 @@ void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
     bd->VulkanInitInfo.MinImageCount = min_image_count;
 }
 
-// Register a texture
-// FIXME: This is experimental in the sense that we are unsure how to best design/tackle this problem, please post to https://github.com/ocornut/imgui/pull/914 if you have suggestions.
-VkDescriptorSet ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_view, VkImageLayout image_layout)
-{
-    ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
-    ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-
-    // Create Descriptor Set:
-    VkDescriptorSet descriptor_set;
-    {
-        VkDescriptorSetAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = v->DescriptorPool;
-        alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
-        VkResult err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptor_set);
-        check_vk_result(err);
-    }
-
-    // Update the Descriptor Set:
-    {
-        VkDescriptorImageInfo desc_image[1] = {};
-        desc_image[0].sampler = sampler;
-        desc_image[0].imageView = image_view;
-        desc_image[0].imageLayout = image_layout;
-        VkWriteDescriptorSet write_desc[1] = {};
-        write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write_desc[0].dstSet = descriptor_set;
-        write_desc[0].descriptorCount = 1;
-        write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write_desc[0].pImageInfo = desc_image;
-        vkUpdateDescriptorSets(v->Device, 1, write_desc, 0, nullptr);
-    }
-    return descriptor_set;
-}
-
 void ImGui_ImplVulkan_RemoveTexture(VkDescriptorSet descriptor_set)
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
@@ -1531,7 +1497,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
         depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         std::array<VkAttachmentDescription, 2> attachmentsDesc;
-        attachmentsDesc[ 0 ] = colorAttachmentDesc;
+        attachmentsDesc[ 0 ] = attachment;
         attachmentsDesc[ 1 ] = depthAttachmentDesc;
 
         VkAttachmentReference color_attachment = {};
@@ -1574,11 +1540,11 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
 
         VkRenderPassCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        info.attachmentCount = attachmentsDesc.size();
+        info.attachmentCount = ( uint32_t ) attachmentsDesc.size();
         info.pAttachments = attachmentsDesc.data();
         info.subpassCount = 1;
         info.pSubpasses = &subpass;
-        info.dependencyCount = dependencies.size();
+        info.dependencyCount = ( uint32_t ) dependencies.size();
         info.pDependencies = dependencies.data();
 
         err = vkCreateRenderPass(device, &info, allocator, &wd->RenderPass);
@@ -1662,7 +1628,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
         VkFramebufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.renderPass = wd->RenderPass;
-        info.attachmentCount = attachments.size();
+        info.attachmentCount = ( uint32_t ) attachments.size();
         info.pAttachments = attachments.data();
         info.width = wd->Width;
         info.height = wd->Height;
@@ -2028,7 +1994,9 @@ using CacheKey = void*;
 static std::unordered_map< CacheKey, ImageData > DescriptorSetCahce;
 
 // 24/06/22 - Update so we can call the function every frame, and we don't allocate a new descriptor set.
-ImTextureID ImGui_ImplVulkan_AddTexture( VkSampler sampler, VkImageView image_view, VkImageLayout image_layout ) 
+// Register a texture
+// FIXME: This is experimental in the sense that we are unsure how to best design/tackle this problem, please post to https://github.com/ocornut/imgui/pull/914 if you have suggestions.
+VkDescriptorSet ImGui_ImplVulkan_AddTexture( VkSampler sampler, VkImageView image_view, VkImageLayout image_layout ) 
 {
     VkResult err;
 	
@@ -2078,7 +2046,7 @@ ImTextureID ImGui_ImplVulkan_AddTexture( VkSampler sampler, VkImageView image_vi
 	}
 
 
-	return ( ImTextureID )descriptor_set;
+	return descriptor_set;
 }
 
 //-----------------------------------------------------------------------------

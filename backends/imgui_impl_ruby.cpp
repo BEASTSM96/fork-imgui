@@ -396,8 +396,8 @@ static void ImGui_ImplRuby_UpdateMousePosAndButtons()
 
 	for( int i = 0; i < IM_ARRAYSIZE( io.MouseDown ); i++ )
 	{
-		io.MouseDown[ i ] = bd->MouseJustPressed[ i ] || bd->Window->IsMouseButtonDown( ( RubyMouseButton )i );
-		bd->MouseJustPressed[ i ] = false;
+		//io.MouseDown[ i ] = bd->MouseJustPressed[ i ] || bd->Window->IsMouseButtonDown( ( RubyMouseButton )i );
+		//bd->MouseJustPressed[ i ] = false;
 	}
 
 	for( int n = 0; n < platform_io.Viewports.Size; n++ )
@@ -643,7 +643,7 @@ static void ImGui_ImplRuby_SetWindowPos(ImGuiViewport* viewport, ImVec2 pos)
 {
 	ImGui_ImplRuby_ViewportData* vd = ( ImGui_ImplRuby_ViewportData* ) viewport->PlatformUserData;
 
-	vd->Window->SetPosition( pos.x, pos.y );
+    vd->Window->SetPosition( ( int ) pos.x, ( int ) pos.y );
 }
 
 static ImVec2 ImGui_ImplRuby_GetWindowSize(ImGuiViewport* viewport)
@@ -657,7 +657,7 @@ static void ImGui_ImplRuby_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
 {
 	ImGui_ImplRuby_ViewportData* vd = ( ImGui_ImplRuby_ViewportData* ) viewport->PlatformUserData;
 
-	vd->Window->Resize( size.x, size.y );
+	vd->Window->Resize( ( uint32_t ) size.x, ( uint32_t ) size.y );
 }
 
 static void ImGui_ImplRuby_SetWindowTitle(ImGuiViewport* viewport, const char* title)
