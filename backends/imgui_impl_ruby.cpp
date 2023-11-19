@@ -26,6 +26,7 @@ struct ImGui_ImplRuby_Data
 	RubyWindow*             KeyOwnerWindows[512];
 	bool                    InstalledCallbacks;
 	bool                    WantUpdateMonitors;
+    ImVec2                  LastValidMousePos;
 	ImGui_ImplRuby_MainEventHandler* EventHandler;
 
 	ImGui_ImplRuby_Data()   { memset(this, 0, sizeof(*this)); }
@@ -38,15 +39,10 @@ static bool ImGui_ImplRuby_DispatchEvent( RubyEvent& rEvent, RubyWindow* pWindow
 	switch( rEvent.Type )
 	{
 		case RubyEventType::MouseReleased:
-		{
-			RubyMouseEvent MouseEvent = ( RubyMouseEvent& ) rEvent;
-			ImGui_ImplRuby_MouseButtonCallback( pWindow, MouseEvent.GetButton(), false );
-		} break;
-
 		case RubyEventType::MousePressed:
 		{
 			RubyMouseEvent MouseEvent = ( RubyMouseEvent& ) rEvent;
-			ImGui_ImplRuby_MouseButtonCallback( pWindow, MouseEvent.GetButton(), true );
+			ImGui_ImplRuby_MouseButtonCallback( pWindow, MouseEvent.GetButton(), rEvent.Type == RubyEventType::MousePressed );
 		} break;
 
 		case RubyEventType::KeyPressed:
@@ -67,14 +63,16 @@ static bool ImGui_ImplRuby_DispatchEvent( RubyEvent& rEvent, RubyWindow* pWindow
 			ImGui_ImplRuby_CharCallback( CharEvent.GetCharacter() );
 		} break;
 
-		case RubyEventType::MouseEnterWindow:
-		{
-			ImGui_ImplRuby_CursorEnterCallback( pWindow, true );
-		} break;
+        case RubyEventType::MouseMoved:
+        {
+            RubyMouseMoveEvent MouseMoveEvent = ( RubyMouseMoveEvent& ) rEvent;
+            ImGui_ImplRuby_CursorPosCallback( pWindow, MouseMoveEvent.GetX(), MouseMoveEvent.GetY() );
+        } break;
 
+		case RubyEventType::MouseEnterWindow:
 		case RubyEventType::MouseLeaveWindow:
 		{
-			ImGui_ImplRuby_CursorEnterCallback( pWindow, false );
+			ImGui_ImplRuby_CursorEnterCallback( pWindow, rEvent.Type == RubyEventType::MouseEnterWindow );
 		} break;
 		
 		case RubyEventType::WindowFocus: 
@@ -83,10 +81,6 @@ static bool ImGui_ImplRuby_DispatchEvent( RubyEvent& rEvent, RubyWindow* pWindow
 
 			ImGuiIO& io = ImGui::GetIO();
 			io.AddFocusEvent( FocusEvent.GetState() );
-		} break;
-
-		case RubyEventType::DisplayChanged: 
-		{
 		} break;
 
 		case RubyEventType::MouseScroll:
@@ -190,11 +184,106 @@ static void ImGui_ImplRuby_SetClipboardText(void* user_data, const char* text)
 {
 }
 
+static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
+{
+    switch( scancode )
+    {
+        case A: return ImGuiKey_A;
+        case B: return ImGuiKey_B;
+        case C: return ImGuiKey_C;
+        case D: return ImGuiKey_D;
+        case E: return ImGuiKey_E;
+        case F: return ImGuiKey_F;
+        case G: return ImGuiKey_G;
+        case H: return ImGuiKey_H;
+        case I: return ImGuiKey_I;
+        case J: return ImGuiKey_J;
+        case K: return ImGuiKey_K;
+        case L: return ImGuiKey_L;
+        case M: return ImGuiKey_M;
+        case N: return ImGuiKey_N;
+        case O: return ImGuiKey_O;
+        case P: return ImGuiKey_P;
+        case Q: return ImGuiKey_Q;
+        case R: return ImGuiKey_R;
+        case S: return ImGuiKey_S;
+        case T: return ImGuiKey_T;
+        case U: return ImGuiKey_U;
+        case V: return ImGuiKey_V;
+        case W: return ImGuiKey_W;
+        case X: return ImGuiKey_X;
+        case Y: return ImGuiKey_Y;
+        case Z: return ImGuiKey_Z;
+        case Num0: return ImGuiKey_0;
+        case Num1: return ImGuiKey_1;
+        case Num2: return ImGuiKey_2;
+        case Num3: return ImGuiKey_3;
+        case Num4: return ImGuiKey_4;
+        case Num5: return ImGuiKey_5;
+        case Num6: return ImGuiKey_6;
+        case Num7: return ImGuiKey_7;
+        case Num8: return ImGuiKey_8;
+        case Num9: return ImGuiKey_9;
+        case Space: return ImGuiKey_Space;
+        case Enter: return ImGuiKey_Enter;
+        case Tab: return ImGuiKey_Tab;
+        case Esc: return ImGuiKey_Escape;
+        case Backspace: return ImGuiKey_Backspace;
+        case CapsLock: return ImGuiKey_CapsLock;
+        case Shift: return ImGuiKey_LeftShift;
+        case Ctrl: return ImGuiKey_LeftCtrl;
+        case Alt: return ImGuiKey_LeftAlt;
+        case OSKey: return ImGuiKey_LeftSuper;
+        case Insert: return ImGuiKey_Insert;
+        case Delete: return ImGuiKey_Delete;
+        case Home: return ImGuiKey_Home;
+        case End: return ImGuiKey_End;
+        case PageUp: return ImGuiKey_PageUp;
+        case PageDown: return ImGuiKey_PageDown;
+        case Numpad0: return ImGuiKey_Keypad0;
+        case Numpad1: return ImGuiKey_Keypad1;
+        case Numpad2: return ImGuiKey_Keypad2;
+        case Numpad3: return ImGuiKey_Keypad3;
+        case Numpad4: return ImGuiKey_Keypad4;
+        case Numpad5: return ImGuiKey_Keypad5;
+        case Numpad6: return ImGuiKey_Keypad6;
+        case Numpad7: return ImGuiKey_Keypad7;
+        case Numpad8: return ImGuiKey_Keypad8;
+        case Numpad9: return ImGuiKey_Keypad9;
+        case NumpadAdd: return ImGuiKey_KeypadAdd;
+        case NumpadSubtract: return ImGuiKey_KeypadSubtract;
+        case NumpadMultiply: return ImGuiKey_KeypadMultiply;
+        case NumpadDivide: return ImGuiKey_KeypadDivide;
+        case LeftArrow: return ImGuiKey_LeftArrow;
+        case UpArrow: return ImGuiKey_UpArrow;
+        case RightArrow: return ImGuiKey_RightShift;
+        case DownArrow: return ImGuiKey_DownArrow;
+        case F1: return ImGuiKey_F1;
+        case F2: return ImGuiKey_F2;
+        case F3: return ImGuiKey_F3;
+        case F4: return ImGuiKey_F4;
+        case F5: return ImGuiKey_F5;
+        case F6: return ImGuiKey_F6;
+        case F7: return ImGuiKey_F7;
+        case F8: return ImGuiKey_F8;
+        case F9: return ImGuiKey_F9;
+        case F10: return ImGuiKey_F10;
+        case F11: return ImGuiKey_F11;
+        case F12: return ImGuiKey_F12;
+        case RightCtrl: return ImGuiKey_RightCtrl;
+        case RightShift: return ImGuiKey_RightShift;
+        case RightAlt: return ImGuiKey_RightAlt;
+
+        case UnknownKey:
+        default: return ImGuiKey_None;
+    }
+}
+
 void ImGui_ImplRuby_MouseButtonCallback(RubyWindow* window, int button, bool state)
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	if( state && button >= 0 && button < ImGuiMouseButton_COUNT )
+	if( button >= 0 && button < ImGuiMouseButton_COUNT )
 		io.AddMouseButtonEvent( button, state );
 }
 
@@ -204,37 +293,29 @@ void ImGui_ImplRuby_ScrollCallback( double xoffset, double yoffset)
 	io.AddMouseWheelEvent( (float)xoffset, (float)yoffset );
 }
 
+static void ImGui_ImplRuby_UpdateKeyModifiers( RubyWindow* window )
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddKeyEvent( ImGuiMod_Ctrl,
+        ( window->IsKeyDown( RubyKey::Ctrl ) || window->IsKeyDown( RubyKey::RightCtrl ) ) );
+    io.AddKeyEvent( ImGuiMod_Alt,
+        ( window->IsKeyDown( RubyKey::Alt ) || window->IsKeyDown( RubyKey::RightAlt ) ) );
+    io.AddKeyEvent( ImGuiMod_Shift,
+        ( window->IsKeyDown( RubyKey::Shift ) || window->IsKeyDown( RubyKey::RightShift ) ) );
+    io.AddKeyEvent( ImGuiMod_Super,
+        ( window->IsKeyDown( RubyKey::OSKey ) ) );
+}
+
 void ImGui_ImplRuby_KeyCallback( RubyWindow* window, int scancode, bool state, int mods)
 {
+	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 
-	ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplRuby_UpdateKeyModifiers( window );
 
-	if( scancode >= 0 && scancode < IM_ARRAYSIZE( io.KeysDown ) )
-	{
-		if( state )
-		{
-			io.KeysDown[ scancode ] = true;
-			bd->KeyOwnerWindows[ scancode ] = window;
-		}
-		else
-		{
-			io.KeysDown[ scancode ] = false;
-			bd->KeyOwnerWindows[ scancode ] = NULL;
-		}
-	}
-
-	// Mods do not work right now after megre they will because I'll update ImGui fork.
-	io.KeyCtrl = io.KeysDown[ RubyKey::LeftCtrl ]   || io.KeysDown[ RubyKey::RightCtrl ];
-	io.KeyAlt = io.KeysDown[ RubyKey::LeftAlt ]     || io.KeysDown[ RubyKey::RightAlt ];
-	io.KeyShift = io.KeysDown[ RubyKey::LeftShift ] || io.KeysDown[ RubyKey::LeftAlt ];
-
-#ifdef _WIN32
-	io.KeySuper = false;
-#else
-	// TODO:
-#endif
-
+    ImGuiKey imgui_key = ImGui_ImplRuby_KeyToImGuiKey( scancode );
+    io.AddKeyEvent( imgui_key, state );
+    io.SetKeyEventNativeData( imgui_key, scancode, scancode );
 }
 
 void ImGui_ImplRuby_MouseHoverWindowCallback( bool state )
@@ -255,18 +336,41 @@ void ImGui_ImplRuby_MouseHoverWindowCallback( bool state )
 void ImGui_ImplRuby_WindowFocusCallback( RubyWindow* window, bool focused )
 {
 	ImGuiIO& io = ImGui::GetIO();
-    io.AddFocusEvent(focused != 0);
+	io.AddFocusEvent(focused != 0);
 }
 
 void ImGui_ImplRuby_CursorEnterCallback( RubyWindow* window, bool entered )
 {
+    ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
-	
-	if( entered )
-		bd->MouseWindow = window;
-	
-	if( !entered && bd->MouseWindow == window )
-		bd->MouseWindow = nullptr;
+
+    if( entered )
+    {
+        bd->MouseWindow = window;
+        io.AddMousePosEvent( bd->LastValidMousePos.x, bd->LastValidMousePos.y );
+    }
+    else if( !entered && bd->MouseWindow == window )
+    {
+        bd->LastValidMousePos = io.MousePos;
+        bd->MouseWindow = nullptr;
+        io.AddMousePosEvent( -FLT_MAX, -FLT_MAX );
+    }
+}
+
+void ImGui_ImplRuby_CursorPosCallback( RubyWindow* window, float x, float y )
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
+
+    if( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
+    {
+        RubyIVec2 pos = window->GetPosition();
+        x += pos.x;
+        y += pos.y;
+    }
+
+    io.AddMousePosEvent( x, y );
+    bd->LastValidMousePos = ImVec2( x, y );
 }
 
 void ImGui_ImplRuby_CharCallback( unsigned int c )
@@ -300,30 +404,6 @@ static bool ImGui_ImplRuby_Init( RubyWindow* window, bool install_callbacks, Rub
 	bd->EventHandler->PrevUserEventTarget = bd->Window->GetEventTarget();
 
 	bd->Window->SetEventTarget( bd->EventHandler );
-
-	// Keyboard mapping. Dear ImGui will use those indices to peek into the io.KeysDown[] array.
-	io.KeyMap[ImGuiKey_Tab]         = (int)RubyKey::Tab;
-	io.KeyMap[ImGuiKey_LeftArrow]   = (int)RubyKey::LeftArrow;
-	io.KeyMap[ImGuiKey_RightArrow]  = (int)RubyKey::RightArrow;
-	io.KeyMap[ImGuiKey_UpArrow]     = (int)RubyKey::UpArrow;
-	io.KeyMap[ImGuiKey_DownArrow]   = (int)RubyKey::DownArrow;
-	io.KeyMap[ImGuiKey_PageUp]      = (int)RubyKey::PageUp;
-	io.KeyMap[ImGuiKey_PageDown]    = (int)RubyKey::PageDown;
-	io.KeyMap[ImGuiKey_Home]        = (int)RubyKey::Home;
-	io.KeyMap[ImGuiKey_End]         = (int)RubyKey::End;
-	io.KeyMap[ImGuiKey_Insert]      = (int)RubyKey::Insert;
-	io.KeyMap[ImGuiKey_Delete]      = (int)RubyKey::Delete;
-	io.KeyMap[ImGuiKey_Backspace]   = (int)RubyKey::Backspace;
-	io.KeyMap[ImGuiKey_Space]       = (int)RubyKey::Space; 
-	io.KeyMap[ImGuiKey_Enter]       = (int)RubyKey::Enter;
-	io.KeyMap[ImGuiKey_Escape]      = (int)RubyKey::Esc;
-	io.KeyMap[ImGuiKey_KeyPadEnter] = (int)RubyKey::NumpadEnter;
-	io.KeyMap[ImGuiKey_A]           = (int)RubyKey::A;
-	io.KeyMap[ImGuiKey_C]           = (int)RubyKey::C;
-	io.KeyMap[ImGuiKey_V]           = (int)RubyKey::V;
-	io.KeyMap[ImGuiKey_X]           = (int)RubyKey::X;
-	io.KeyMap[ImGuiKey_Y]           = (int)RubyKey::Y;
-	io.KeyMap[ImGuiKey_Z]           = (int)RubyKey::Z;
 
 	io.SetClipboardTextFn = ImGui_ImplRuby_SetClipboardText;
 	io.GetClipboardTextFn = ImGui_ImplRuby_GetClipboardText;
@@ -371,7 +451,7 @@ bool ImGui_ImplRuby_InitForOther( RubyWindow* window )
 void ImGui_ImplRuby_Shutdown()
 {
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
-	IM_ASSERT(bd != NULL && "No platform backend to shutdown, or already shutdown?");
+	IM_ASSERT(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
 	ImGuiIO& io = ImGui::GetIO();
 
 	ImGui_ImplRuby_ShutdownPlatformInterface();
@@ -379,64 +459,59 @@ void ImGui_ImplRuby_Shutdown()
 	bd->Window->SetEventTarget( bd->EventHandler->PrevUserEventTarget );
 	delete bd->EventHandler;
 
-	io.BackendPlatformName = NULL;
-	io.BackendPlatformUserData = NULL;
+	io.BackendPlatformName = nullptr;
+	io.BackendPlatformUserData = nullptr;
 	IM_DELETE(bd);
 }
 
-static void ImGui_ImplRuby_UpdateMousePosAndButtons()
+static void ImGui_ImplRuby_UpdateMouseData()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 	ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
 
-	const ImVec2 mouse_pos_prev = io.MousePos;
-	io.MousePos = ImVec2( -FLT_MAX, -FLT_MAX );
-	io.MouseHoveredViewport = 0;
-
-	for( int i = 0; i < IM_ARRAYSIZE( io.MouseDown ); i++ )
-	{
-		//io.MouseDown[ i ] = bd->MouseJustPressed[ i ] || bd->Window->IsMouseButtonDown( ( RubyMouseButton )i );
-		//bd->MouseJustPressed[ i ] = false;
-	}
+    ImGuiID mouse_viewport_id = 0;
+    const ImVec2 mouse_pos_prev = io.MousePos;
 
 	for( int n = 0; n < platform_io.Viewports.Size; n++ )
 	{
 		ImGuiViewport* viewport = platform_io.Viewports[ n ];
 		RubyWindow* window = ( RubyWindow* ) viewport->PlatformHandle;
 
-		RubyWindow* mouse_window = ( bd->MouseWindow == window || window->IsFocused() ) ? window : NULL;
-
 		if( window->IsFocused() )
 		{
-			for( int i = 0; i < IM_ARRAYSIZE( io.MouseDown ); i++ )
+			if( io.WantSetMousePos )
 			{
-				io.MouseDown[ i ] |= window->IsMouseButtonDown( ( RubyMouseButton ) i );
+				window->SetMousePos( ( double ) mouse_pos_prev.x - viewport->Pos.x, ( double ) mouse_pos_prev.y - viewport->Pos.y );
+			}
+
+			if( !bd->MouseWindow )
+			{
+				double x, y;
+				window->GetMousePos( &x, &y );
+
+				if( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
+				{
+					RubyIVec2 pos = window->GetPosition();
+
+                    x += pos.x;
+                    y += pos.y;
+				}
+
+                bd->LastValidMousePos = ImVec2( static_cast< float >( x ), static_cast< float >( y ) );
+				io.AddMousePosEvent( static_cast< float >( x ), static_cast< float >( y ) );
 			}
 		}
 
-		if( io.WantSetMousePos && window->IsFocused() ) 
+        const bool window_no_input = ( viewport->Flags & ImGuiViewportFlags_NoInputs ) != 0;
+		if( window->MouseInWindow() && !window_no_input )
 		{
-			window->SetMousePos( (double) mouse_pos_prev.x - viewport->Pos.x, (double) mouse_pos_prev.y - viewport->Pos.y );
-		}
-
-		if( mouse_window )
-		{
-			double x, y;
-			mouse_window->GetMousePos( &x, &y );
-
-			if( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
-			{
-				RubyIVec2 pos = mouse_window->GetPosition();
-
-				io.MousePos = ImVec2( static_cast< float >( x + pos.x ), static_cast< float >( y + pos.y ) );
-			}
-			else
-			{
-				io.MousePos = ImVec2( static_cast< float >( x ), static_cast< float >( y ) );
-			}
+			mouse_viewport_id = viewport->ID;
 		}
 	}
+
+	if( io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport )
+		io.AddMouseViewportEvent( mouse_viewport_id );
 }
 
 static void ImGui_ImplRuby_UpdateMouseCursor()
@@ -444,7 +519,7 @@ static void ImGui_ImplRuby_UpdateMouseCursor()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 
-	if( ( io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange ) )
+	if( ( io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange ) || bd->Window->GetCursorMode() == RubyCursorMode::Locked )
 		return;
 
 	ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
@@ -462,6 +537,7 @@ static void ImGui_ImplRuby_UpdateMouseCursor()
 		else
 		{
 			window->SetMouseCursor( ( RubyCursorType )bd->MouseCursor[ imgui_cursor ] );
+            window->SetMouseCursorMode( RubyCursorMode::Normal );
 		}
 	}
 }
@@ -521,12 +597,15 @@ void ImGui_ImplRuby_NewFrame()
 	bd->Time = current_time;
 
 	ImGui_ImplRuby_UpdateEvents();
-	ImGui_ImplRuby_UpdateMousePosAndButtons();
+
+	ImGui_ImplRuby_UpdateMouseData();
 	ImGui_ImplRuby_UpdateMouseCursor();
 
 	// Update game controllers (if enabled and available)
 	ImGui_ImplRuby_UpdateGamepads();
 }
+
+#pragma region MultiViewport
 
 //--------------------------------------------------------------------------------------------------------
 // MULTI-VIEWPORT / PLATFORM INTERFACE SUPPORT
@@ -588,10 +667,10 @@ static void ImGui_ImplRuby_DestroyWindow(ImGuiViewport* viewport)
 		   delete vd->Window;
 		}
 
-		vd->Window = NULL;
+		vd->Window = nullptr;
 		IM_DELETE( vd );
 	}
-	viewport->PlatformUserData = viewport->PlatformHandle = NULL;
+	viewport->PlatformUserData = viewport->PlatformHandle = nullptr;
 }
 
 static void ImGui_ImplRuby_ShowWindow(ImGuiViewport* viewport)
@@ -643,7 +722,7 @@ static void ImGui_ImplRuby_SetWindowPos(ImGuiViewport* viewport, ImVec2 pos)
 {
 	ImGui_ImplRuby_ViewportData* vd = ( ImGui_ImplRuby_ViewportData* ) viewport->PlatformUserData;
 
-    vd->Window->SetPosition( ( int ) pos.x, ( int ) pos.y );
+	vd->Window->SetPosition( ( int ) pos.x, ( int ) pos.y );
 }
 
 static ImVec2 ImGui_ImplRuby_GetWindowSize(ImGuiViewport* viewport)
@@ -788,3 +867,5 @@ static void ImGui_ImplRuby_ShutdownPlatformInterface()
 {
 	ImGui::DestroyPlatformWindows();
 }
+
+#pragma endregion
