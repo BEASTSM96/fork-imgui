@@ -158,7 +158,7 @@ public:
 	}
 
 public:
-	ImGuiViewport* pViewport;
+	ImGuiViewport* pViewport = nullptr;
 };
 
 
@@ -177,11 +177,17 @@ static void ImGui_ImplRuby_ShutdownPlatformInterface();
 // Functions
 static const char* ImGui_ImplRuby_GetClipboardText(void* user_data)
 {
-	return "";
+    ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
+
+    const char* text = bd->Window->GetClipboardText();
+	return text;
 }
 
 static void ImGui_ImplRuby_SetClipboardText(void* user_data, const char* text)
 {
+    ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
+
+    bd->Window->SetClipboardText( text );
 }
 
 static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
