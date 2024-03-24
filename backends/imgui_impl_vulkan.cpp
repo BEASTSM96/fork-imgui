@@ -2001,7 +2001,7 @@ struct ImageData
 
 using CacheKey = void*;
 
-static std::unordered_map< CacheKey, ImageData > DescriptorSetCahce;
+static std::unordered_map< CacheKey, ImageData > DescriptorSetCache;
 
 // 24/06/22 - Update so we can call the function every frame, and we don't allocate a new descriptor set.
 // Register a texture
@@ -2019,7 +2019,7 @@ VkDescriptorSet ImGui_ImplVulkan_AddTexture( VkSampler sampler, VkImageView imag
     if( !v )
         return nullptr;
 
-    if( DescriptorSetCahce.find( (CacheKey)image_view ) == DescriptorSetCahce.end() )
+    if( DescriptorSetCache.find( (CacheKey)image_view ) == DescriptorSetCache.end() )
     {
 		VkDescriptorSet descriptor_set;
 		// Create Descriptor Set:
@@ -2033,10 +2033,10 @@ VkDescriptorSet ImGui_ImplVulkan_AddTexture( VkSampler sampler, VkImageView imag
 			check_vk_result( err );
 		}
 
-        DescriptorSetCahce[ ( CacheKey ) image_view ] = { .Sampler = sampler, .ImageView = image_view, .Layout = image_layout, .Set = descriptor_set };
+        DescriptorSetCache[ ( CacheKey ) image_view ] = { .Sampler = sampler, .ImageView = image_view, .Layout = image_layout, .Set = descriptor_set };
 	}
 
-    VkDescriptorSet descriptor_set = DescriptorSetCahce[ (CacheKey) image_view ].Set;
+    VkDescriptorSet descriptor_set = DescriptorSetCache[ (CacheKey) image_view ].Set;
 
     // Always update the descriptor set.
 	// Update the Descriptor Set:
