@@ -250,8 +250,8 @@ IMGUI_VULKAN_FUNC_MAP(IMGUI_VULKAN_FUNC_DEF)
 #undef IMGUI_VULKAN_FUNC_DEF
 #endif // VK_NO_PROTOTYPES
 
-// For some reason on Vulkan 1.2 'VK_KHR_dynamic_rendering' is defined however the structs VkRenderingInfo is not.
-// So I have removed the or of 'VK_KHR_dynamic_rendering'
+// For some reason on Vulkan 1.2 'VK_KHR_dynamic_rendering' is defined however the struct VkRenderingInfo is not.
+// So I have removed '|| defined(VK_KHR_dynamic_rendering)'
 #if defined(VK_VERSION_1_3)
 #define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 static PFN_vkCmdBeginRenderingKHR   ImGuiImplVulkanFuncs_vkCmdBeginRenderingKHR;
@@ -1477,7 +1477,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
 
     // Back when we used to have a Depth image when presenting to the swapchain is this needed to be two.
     // However now can be set to one.
-    const int ATTACHMENT_COUNT = 1;
+    constexpr int ATTACHMENT_COUNT = 1;
 
     // Create the Render Pass
     if (!wd->UseDynamicRendering)
