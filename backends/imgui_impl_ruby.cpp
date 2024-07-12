@@ -5,8 +5,10 @@
 #include "imgui_impl_ruby.h"
 
 // Ruby
-#include <Ruby/RubyWindow.h>
-#include <Ruby/RubyMonitor.h>
+#include <Saturn/Core/Ruby/RubyWindow.h>
+#include <Saturn/Core/Ruby/RubyMonitor.h>
+
+using namespace Saturn;
 
 enum class RubyClientAPI
 {
@@ -775,13 +777,12 @@ static bool ImGui_ImplRuby_GetWindowMinimized(ImGuiViewport* viewport)
 
 static void ImGui_ImplRuby_RenderWindow(ImGuiViewport* viewport, void*)
 {
+    IM_UNUSED( viewport );
 }
 
 static void ImGui_ImplRuby_SwapBuffers(ImGuiViewport* viewport, void*)
 {
-	ImGui_ImplRuby_ViewportData* vd = ( ImGui_ImplRuby_ViewportData* ) viewport->PlatformUserData;
-
-	vd->Window->GLSwapBuffers();
+    IM_UNUSED( viewport );
 }
 
 //--------------------------------------------------------------------------------------------------------
