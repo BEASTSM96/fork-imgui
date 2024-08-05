@@ -7,6 +7,7 @@
 // Ruby
 #include <Saturn/Core/Ruby/RubyWindow.h>
 #include <Saturn/Core/Ruby/RubyMonitor.h>
+#include <Saturn/Core/Ruby/RubyLibrary.h>
 
 using namespace Saturn;
 
@@ -559,7 +560,7 @@ static void ImGui_ImplRuby_UpdateMonitors()
 	ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 
-	std::vector<RubyMonitor> monitors = RubyGetAllMonitors();
+	std::vector<RubyMonitor> monitors = RubyLibrary::Get().GetAllMonitors();
 
 	for( const auto& rMonitor : monitors )
 	{
