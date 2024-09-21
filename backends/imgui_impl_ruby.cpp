@@ -647,7 +647,7 @@ static void ImGui_ImplRuby_CreateWindow(ImGuiViewport* viewport)
 	RubyWindowSpecification spec;
 	spec.Style = ( viewport->Flags & ImGuiViewportFlags_NoDecoration ) ? RubyStyle::Borderless : RubyStyle::Default;
 	spec.GraphicsAPI = (RubyGraphicsAPI) bd->ClientApi;
-	spec.Name = "No Name Yet.";
+	spec.Name = L"No Name Yet.";
 	spec.ShowNow = false;
 	spec.Width = ( uint32_t ) viewport->Size.x;
 	spec.Height = ( uint32_t ) viewport->Size.y;
