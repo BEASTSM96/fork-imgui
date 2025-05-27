@@ -365,8 +365,8 @@ static bool ImGui_ImplRuby_Init( RubyWindow* window, RubyClientAPI client_api )
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;         // We can honor GetMouseCursor() values (optional)
 	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;          // We can honor io.WantSetMousePos requests (optional, rarely used)
 	io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;    // We can create multi-viewports on the Platform side (optional)
-#if defined(_WIN32)
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport; // We can set io.MouseHoveredViewport correctly (optional, not easy)
+#if defined(SAT_PLATFORM_WINDOWS)
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport; // We can call io.AddMouseViewportEvent() with correct data (optional)
 #endif
 
 	bd->Window = window;
@@ -445,7 +445,6 @@ static void ImGui_ImplRuby_UpdateMouseData()
 	ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
 
 	const ImVec2 mouse_pos_prev = io.MousePos;
-	RubyWindow* pHoveredWindow = nullptr;
 	ImGuiID mouse_viewport_id = 0;
 
 	for( int n = 0; n < platform_io.Viewports.Size; n++ )
@@ -463,18 +462,17 @@ static void ImGui_ImplRuby_UpdateMouseData()
 			// (Optional) Fallback to provide mouse position when focused (ImGui_ImplRuby_CursorPosCallback already provides this when hovered or captured)
 			if( bd->MouseButtonsDown == 0 && bd->MouseWindow == nullptr )
 			{
-				double x, y;
-				window->GetMousePos( &x, &y );
+				RubyVec2 mousePos = window->GetMousePos();
 
 				if( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 				{
 					RubyIVec2 pos = window->GetPosition();
 
-					x += pos.x;
-					y += pos.y;
+                    mousePos.x += pos.x;
+                    mousePos.y += pos.y;
 				}
 
-				io.AddMousePosEvent( static_cast< float >( x ), static_cast< float >( y ) );
+				io.AddMousePosEvent( static_cast< float >( mousePos.x ), static_cast< float >( mousePos.y ) );
 			}
 		}
 
@@ -552,7 +550,7 @@ void ImGui_ImplRuby_NewFrame()
 
 	// Setup display size (every frame to accommodate for window resizing)
 	RubyIVec2 size = bd->Window->GetSize();
-	io.DisplaySize = ImVec2( size.x, size.y );
+    io.DisplaySize = ImVec2( ( float ) size.x, ( float ) size.y );
 
 	if( bd->WantUpdateMonitors )
 		ImGui_ImplRuby_UpdateMonitors();
@@ -627,7 +625,7 @@ static void ImGui_ImplRuby_CreateWindow( ImGuiViewport* viewport )
 	spec.ShowNow = false;
 	spec.Width = ( uint32_t ) viewport->Size.x;
 	spec.Height = ( uint32_t ) viewport->Size.y;
-	spec.pParentWindow = ImGui_ImplRuby_GetWindowFromViewportID( viewport->ParentViewportId );
+	spec.pParentWindow = nullptr;
 
 	vd->Window = new RubyWindow( spec );
 	vd->Window->SetEventTarget( IM_NEW( ImGui_ImplRuby_EventHandler )( viewport ) );
@@ -696,7 +694,15 @@ static void ImGui_ImplRuby_ShowWindow( ImGuiViewport* viewport )
 
 #endif
 
-	vd->Window->Show();
+    if( ( viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing ) == false )
+    {
+        vd->Window->Show();
+        vd->Window->Focus();
+    }
+    else
+    {
+        ::ShowWindow( hwnd, SW_SHOWNA );
+    }
 }
 
 static ImVec2 ImGui_ImplRuby_GetWindowPos( ImGuiViewport* viewport )
