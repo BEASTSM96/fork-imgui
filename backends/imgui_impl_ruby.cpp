@@ -44,40 +44,40 @@ static ImGui_ImplRuby_Data* ImGui_ImplRuby_GetBackendData()
 }
 
 // Ruby Events
-static bool ImGui_ImplRuby_DispatchEvent( RubyEvent& rEvent, RubyWindow* pWindow )
+static bool ImGui_ImplRuby_DispatchEvent( Event& rEvent, RubyWindow* pWindow )
 {
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 	ImGuiIO& io = ImGui::GetIO();
 
 	switch( rEvent.Type )
 	{
-		case RubyEventType::MouseReleased:
-		case RubyEventType::MousePressed:
+		case EventType::MouseReleased:
+		case EventType::MousePressed:
 		{
 			RubyMouseEvent MouseEvent = ( RubyMouseEvent& ) rEvent;
 
-			ImGui_ImplRuby_MouseButtonCallback( pWindow, MouseEvent.GetButton(), rEvent.Type == RubyEventType::MousePressed );
+			ImGui_ImplRuby_MouseButtonCallback( pWindow, MouseEvent.GetButton(), rEvent.Type == EventType::MousePressed );
 		} break;
 
-		case RubyEventType::KeyPressed:
+		case EventType::KeyPressed:
 		{
 			RubyKeyEvent KeyEvent = ( RubyKeyEvent& ) rEvent;
 			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetScancode(), true, KeyEvent.GetModifers() );
 		} break;
 
-		case RubyEventType::KeyReleased:
+		case EventType::KeyReleased:
 		{
 			RubyKeyEvent KeyEvent = ( RubyKeyEvent& ) rEvent;
 			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetScancode(), false, 0 );
 		} break;
 
-		case RubyEventType::InputCharacter:
+		case EventType::InputCharacter:
 		{
 			RubyCharacterEvent CharEvent = ( RubyCharacterEvent& ) rEvent;
 			io.AddInputCharacter( CharEvent.GetCharacter() );
 		} break;
 
-		case RubyEventType::MouseMoved:
+		case EventType::MouseMoved:
 		{
 			RubyMouseMoveEvent MouseMoveEvent = ( RubyMouseMoveEvent& ) rEvent;
 
@@ -94,24 +94,24 @@ static bool ImGui_ImplRuby_DispatchEvent( RubyEvent& rEvent, RubyWindow* pWindow
 			io.AddMousePosEvent( x, y );
 		} break;
 
-		case RubyEventType::MouseEnterWindow:
+		case EventType::MouseEnterWindow:
 		{
 			bd->MouseWindow = bd->Window;
 			bd->MousePendingLeaveFrame = 0;
 		} break;
 
-		case RubyEventType::MouseLeaveWindow:
+		case EventType::MouseLeaveWindow:
 		{
 			bd->MousePendingLeaveFrame = ImGui::GetFrameCount() + 1;
 		} break;
 
-		case RubyEventType::WindowFocus:
+		case EventType::WindowFocus:
 		{
 			RubyFocusEvent FocusEvent = ( RubyFocusEvent& ) rEvent;
 			io.AddFocusEvent( FocusEvent.GetState() );
 		} break;
 
-		case RubyEventType::MouseScroll:
+		case EventType::MouseScroll:
 		{
 			RubyMouseScrollEvent ScrollEvent = ( RubyMouseScrollEvent& ) rEvent;
 			io.AddMouseWheelEvent( ( float ) ScrollEvent.GetOffsetX(), ( float ) ScrollEvent.GetOffsetY() );
@@ -133,7 +133,7 @@ public:
 		BackendData = nullptr;
 	}
 
-	bool OnEvent( RubyEvent& rEvent ) override
+	bool OnEvent( Event& rEvent ) override
 	{
 		// Call the users event target first.
 		bool handled = false;
@@ -160,7 +160,7 @@ public:
 
 	~ImGui_ImplRuby_EventHandler() {}
 
-	bool OnEvent( RubyEvent& rEvent ) override
+	bool OnEvent( Event& rEvent ) override
 	{
 		if( !pViewport )
 			return false;
@@ -169,15 +169,15 @@ public:
 
 		switch( rEvent.Type )
 		{
-			case RubyEventType::WindowMoved:
+			case EventType::WindowMoved:
 				pViewport->PlatformRequestMove = true;
 				break;
 
-			case RubyEventType::Resize:
+			case EventType::Resize:
 				pViewport->PlatformRequestResize = true;
 				break;
 
-			case RubyEventType::Close:
+			case EventType::Close:
 				pViewport->PlatformRequestClose = true;
 				return false;
 		}
