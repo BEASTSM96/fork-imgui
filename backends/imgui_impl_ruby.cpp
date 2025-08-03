@@ -26,7 +26,7 @@ struct ImGui_ImplRuby_Data
 	RubyClientAPI           ClientApi;
 	double                  Time;
 	RubyWindow*             MouseWindow;
-	RubyWindow*             KeyOwnerWindows[ RubyKey::EnumSize ];
+	RubyWindow*             KeyOwnerWindows[ RubyKey_EnumSize ];
 	int						MouseCursor[ ImGuiMouseCursor_COUNT ];
 	bool                    WantUpdateMonitors;
 	int                     MousePendingLeaveFrame;
@@ -62,13 +62,13 @@ static bool ImGui_ImplRuby_DispatchEvent( Event& rEvent, RubyWindow* pWindow )
 		case EventType::KeyPressed:
 		{
 			RubyKeyEvent KeyEvent = ( RubyKeyEvent& ) rEvent;
-			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetScancode(), true, KeyEvent.GetModifers() );
+			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetKeycode(), true, KeyEvent.GetModifers() );
 		} break;
 
 		case EventType::KeyReleased:
 		{
 			RubyKeyEvent KeyEvent = ( RubyKeyEvent& ) rEvent;
-			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetScancode(), false, 0 );
+			ImGui_ImplRuby_KeyCallback( pWindow, KeyEvent.GetKeycode(), false, 0 );
 		} break;
 
 		case EventType::InputCharacter:
@@ -214,93 +214,109 @@ static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
 {
 	switch( scancode )
 	{
-		case A: return ImGuiKey_A;
-		case B: return ImGuiKey_B;
-		case C: return ImGuiKey_C;
-		case D: return ImGuiKey_D;
-		case E: return ImGuiKey_E;
-		case F: return ImGuiKey_F;
-		case G: return ImGuiKey_G;
-		case H: return ImGuiKey_H;
-		case I: return ImGuiKey_I;
-		case J: return ImGuiKey_J;
-		case K: return ImGuiKey_K;
-		case L: return ImGuiKey_L;
-		case M: return ImGuiKey_M;
-		case N: return ImGuiKey_N;
-		case O: return ImGuiKey_O;
-		case P: return ImGuiKey_P;
-		case Q: return ImGuiKey_Q;
-		case R: return ImGuiKey_R;
-		case S: return ImGuiKey_S;
-		case T: return ImGuiKey_T;
-		case U: return ImGuiKey_U;
-		case V: return ImGuiKey_V;
-		case W: return ImGuiKey_W;
-		case X: return ImGuiKey_X;
-		case Y: return ImGuiKey_Y;
-		case Z: return ImGuiKey_Z;
-		case Num0: return ImGuiKey_0;
-		case Num1: return ImGuiKey_1;
-		case Num2: return ImGuiKey_2;
-		case Num3: return ImGuiKey_3;
-		case Num4: return ImGuiKey_4;
-		case Num5: return ImGuiKey_5;
-		case Num6: return ImGuiKey_6;
-		case Num7: return ImGuiKey_7;
-		case Num8: return ImGuiKey_8;
-		case Num9: return ImGuiKey_9;
-		case Space: return ImGuiKey_Space;
-		case Enter: return ImGuiKey_Enter;
-		case Tab: return ImGuiKey_Tab;
-		case Esc: return ImGuiKey_Escape;
-		case Backspace: return ImGuiKey_Backspace;
-		case CapsLock: return ImGuiKey_CapsLock;
-		case Shift: return ImGuiKey_LeftShift;
-		case Ctrl: return ImGuiKey_LeftCtrl;
-		case Alt: return ImGuiKey_LeftAlt;
-		case OSKey: return ImGuiKey_LeftSuper;
-		case Insert: return ImGuiKey_Insert;
-		case Delete: return ImGuiKey_Delete;
-		case Home: return ImGuiKey_Home;
-		case End: return ImGuiKey_End;
-		case PageUp: return ImGuiKey_PageUp;
-		case PageDown: return ImGuiKey_PageDown;
-		case Numpad0: return ImGuiKey_Keypad0;
-		case Numpad1: return ImGuiKey_Keypad1;
-		case Numpad2: return ImGuiKey_Keypad2;
-		case Numpad3: return ImGuiKey_Keypad3;
-		case Numpad4: return ImGuiKey_Keypad4;
-		case Numpad5: return ImGuiKey_Keypad5;
-		case Numpad6: return ImGuiKey_Keypad6;
-		case Numpad7: return ImGuiKey_Keypad7;
-		case Numpad8: return ImGuiKey_Keypad8;
-		case Numpad9: return ImGuiKey_Keypad9;
-		case NumpadAdd: return ImGuiKey_KeypadAdd;
-		case NumpadSubtract: return ImGuiKey_KeypadSubtract;
-		case NumpadMultiply: return ImGuiKey_KeypadMultiply;
-		case NumpadDivide: return ImGuiKey_KeypadDivide;
-		case LeftArrow: return ImGuiKey_LeftArrow;
-		case UpArrow: return ImGuiKey_UpArrow;
-		case RightArrow: return ImGuiKey_RightShift;
-		case DownArrow: return ImGuiKey_DownArrow;
-		case F1: return ImGuiKey_F1;
-		case F2: return ImGuiKey_F2;
-		case F3: return ImGuiKey_F3;
-		case F4: return ImGuiKey_F4;
-		case F5: return ImGuiKey_F5;
-		case F6: return ImGuiKey_F6;
-		case F7: return ImGuiKey_F7;
-		case F8: return ImGuiKey_F8;
-		case F9: return ImGuiKey_F9;
-		case F10: return ImGuiKey_F10;
-		case F11: return ImGuiKey_F11;
-		case F12: return ImGuiKey_F12;
-		case RightCtrl: return ImGuiKey_RightCtrl;
-		case RightShift: return ImGuiKey_RightShift;
-		case RightAlt: return ImGuiKey_RightAlt;
+		case RubyKey_A: return ImGuiKey_A;
+		case RubyKey_B: return ImGuiKey_B;
+		case RubyKey_C: return ImGuiKey_C;
+		case RubyKey_D: return ImGuiKey_D;
+		case RubyKey_E: return ImGuiKey_E;
+		case RubyKey_F: return ImGuiKey_F;
+		case RubyKey_G: return ImGuiKey_G;
+		case RubyKey_H: return ImGuiKey_H;
+		case RubyKey_I: return ImGuiKey_I;
+		case RubyKey_J: return ImGuiKey_J;
+		case RubyKey_K: return ImGuiKey_K;
+		case RubyKey_L: return ImGuiKey_L;
+		case RubyKey_M: return ImGuiKey_M;
+		case RubyKey_N: return ImGuiKey_N;
+		case RubyKey_O: return ImGuiKey_O;
+		case RubyKey_P: return ImGuiKey_P;
+		case RubyKey_Q: return ImGuiKey_Q;
+		case RubyKey_R: return ImGuiKey_R;
+		case RubyKey_S: return ImGuiKey_S;
+		case RubyKey_T: return ImGuiKey_T;
+		case RubyKey_U: return ImGuiKey_U;
+		case RubyKey_V: return ImGuiKey_V;
+		case RubyKey_W: return ImGuiKey_W;
+		case RubyKey_X: return ImGuiKey_X;
+		case RubyKey_Y: return ImGuiKey_Y;
+		case RubyKey_Z: return ImGuiKey_Z;
+		case RubyKey_Num0: return ImGuiKey_0;
+		case RubyKey_Num1: return ImGuiKey_1;
+		case RubyKey_Num2: return ImGuiKey_2;
+		case RubyKey_Num3: return ImGuiKey_3;
+		case RubyKey_Num4: return ImGuiKey_4;
+		case RubyKey_Num5: return ImGuiKey_5;
+		case RubyKey_Num6: return ImGuiKey_6;
+		case RubyKey_Num7: return ImGuiKey_7;
+		case RubyKey_Num8: return ImGuiKey_8;
+		case RubyKey_Num9: return ImGuiKey_9;
+		case RubyKey_Space: return ImGuiKey_Space;
+		case RubyKey_Enter: return ImGuiKey_Enter;
+		case RubyKey_Tab: return ImGuiKey_Tab;
+		case RubyKey_Esc: return ImGuiKey_Escape;
+		case RubyKey_Backspace: return ImGuiKey_Backspace;
+		case RubyKey_CapsLock: return ImGuiKey_CapsLock;
+		case RubyKey_LeftShift: return ImGuiKey_LeftShift;
+		case RubyKey_LeftCtrl: return ImGuiKey_LeftCtrl;
+		case RubyKey_LeftAlt: return ImGuiKey_LeftAlt;
+		case RubyKey_OSKey: return ImGuiKey_LeftSuper;
+		case RubyKey_Insert: return ImGuiKey_Insert;
+		case RubyKey_Delete: return ImGuiKey_Delete;
+		case RubyKey_Home: return ImGuiKey_Home;
+		case RubyKey_End: return ImGuiKey_End;
+		case RubyKey_PageUp: return ImGuiKey_PageUp;
+		case RubyKey_PageDown: return ImGuiKey_PageDown;
+		case RubyKey_Numpad0: return ImGuiKey_Keypad0;
+		case RubyKey_Numpad1: return ImGuiKey_Keypad1;
+		case RubyKey_Numpad2: return ImGuiKey_Keypad2;
+		case RubyKey_Numpad3: return ImGuiKey_Keypad3;
+		case RubyKey_Numpad4: return ImGuiKey_Keypad4;
+		case RubyKey_Numpad5: return ImGuiKey_Keypad5;
+		case RubyKey_Numpad6: return ImGuiKey_Keypad6;
+		case RubyKey_Numpad7: return ImGuiKey_Keypad7;
+		case RubyKey_Numpad8: return ImGuiKey_Keypad8;
+		case RubyKey_Numpad9: return ImGuiKey_Keypad9;
+		case RubyKey_NumpadAdd: return ImGuiKey_KeypadAdd;
+		case RubyKey_NumpadSubtract: return ImGuiKey_KeypadSubtract;
+		case RubyKey_NumpadMultiply: return ImGuiKey_KeypadMultiply;
+		case RubyKey_NumpadDivide: return ImGuiKey_KeypadDivide;
+		case RubyKey_LeftArrow: return ImGuiKey_LeftArrow;
+		case RubyKey_UpArrow: return ImGuiKey_UpArrow;
+		case RubyKey_RightArrow: return ImGuiKey_RightShift;
+		case RubyKey_DownArrow: return ImGuiKey_DownArrow;
+		case RubyKey_F1: return ImGuiKey_F1;
+		case RubyKey_F2: return ImGuiKey_F2;
+		case RubyKey_F3: return ImGuiKey_F3;
+		case RubyKey_F4: return ImGuiKey_F4;
+		case RubyKey_F5: return ImGuiKey_F5;
+		case RubyKey_F6: return ImGuiKey_F6;
+		case RubyKey_F7: return ImGuiKey_F7;
+		case RubyKey_F8: return ImGuiKey_F8;
+		case RubyKey_F9: return ImGuiKey_F9;
+		case RubyKey_F10: return ImGuiKey_F10;
+		case RubyKey_F11: return ImGuiKey_F11;
+		case RubyKey_F12: return ImGuiKey_F12;
+		case RubyKey_RightCtrl: return ImGuiKey_RightCtrl;
+		case RubyKey_RightShift: return ImGuiKey_RightShift;
+		case RubyKey_RightAlt: return ImGuiKey_RightAlt;
+		case RubyKey_Apostrophe: return ImGuiKey_Apostrophe;
+//		case RubyKey_Hash: return ImGuiKey_Hash;
+		case RubyKey_Comma: return ImGuiKey_Comma;
+		case RubyKey_Minus: return ImGuiKey_Minus;
+		case RubyKey_Period: return ImGuiKey_Period;
+		case RubyKey_Slash: return ImGuiKey_Slash;
+		case RubyKey_Semicolon: return ImGuiKey_Semicolon;
+		case RubyKey_Equal: return ImGuiKey_Equal;
+		case RubyKey_LeftBracket: return ImGuiKey_LeftBracket;
+		case RubyKey_Backslash: return ImGuiKey_Backslash;
+		case RubyKey_RightBracket: return ImGuiKey_RightBracket;
+		case RubyKey_Grave: return ImGuiKey_GraveAccent;
+        case RubyKey_NumLock: return ImGuiKey_NumLock;
+        case RubyKey_ScrollLock: return ImGuiKey_ScrollLock;
+        case RubyKey_Pause: return ImGuiKey_Pause;
+        case RubyKey_PrintScreen: return ImGuiKey_PrintScreen;
 
-		case UnknownKey:
+		case RubyKey_UnknownKey:
 		default: return ImGuiKey_None;
 	}
 }
@@ -326,13 +342,13 @@ static void ImGui_ImplRuby_UpdateKeyModifiers( RubyWindow* window )
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddKeyEvent( ImGuiMod_Ctrl,
-		( window->IsKeyDown( RubyKey::Ctrl ) || window->IsKeyDown( RubyKey::RightCtrl ) ) );
+		( window->IsKeyDown( RubyKey_LeftCtrl ) || window->IsKeyDown( RubyKey_RightCtrl ) ) );
 	io.AddKeyEvent( ImGuiMod_Alt,
-		( window->IsKeyDown( RubyKey::Alt ) || window->IsKeyDown( RubyKey::RightAlt ) ) );
+		( window->IsKeyDown( RubyKey_LeftAlt ) || window->IsKeyDown( RubyKey_RightAlt ) ) );
 	io.AddKeyEvent( ImGuiMod_Shift,
-		( window->IsKeyDown( RubyKey::Shift ) || window->IsKeyDown( RubyKey::RightShift ) ) );
+		( window->IsKeyDown( RubyKey_LeftShift ) || window->IsKeyDown( RubyKey_RightShift ) ) );
 	io.AddKeyEvent( ImGuiMod_Super,
-		( window->IsKeyDown( RubyKey::OSKey ) ) );
+		( window->IsKeyDown( RubyKey_OSKey ) ) );
 }
 
 void ImGui_ImplRuby_KeyCallback( RubyWindow* window, int scancode, bool state, int mods )
