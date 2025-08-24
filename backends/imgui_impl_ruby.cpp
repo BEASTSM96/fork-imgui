@@ -315,6 +315,7 @@ static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
         case RubyKey_ScrollLock: return ImGuiKey_ScrollLock;
         case RubyKey_Pause: return ImGuiKey_Pause;
         case RubyKey_PrintScreen: return ImGuiKey_PrintScreen;
+        case RubyKey_Menu: return ImGuiKey_Menu;
 
 		case RubyKey_UnknownKey:
 		default: return ImGuiKey_None;
@@ -482,7 +483,7 @@ static void ImGui_ImplRuby_UpdateMouseData()
 
 				if( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 				{
-					RubyIVec2 pos = window->GetPosition();
+					const RubyIVec2 pos = window->GetPosition();
 
                     mousePos.x += pos.x;
                     mousePos.y += pos.y;
