@@ -282,7 +282,7 @@ static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
 		case RubyKey_NumpadDivide: return ImGuiKey_KeypadDivide;
 		case RubyKey_LeftArrow: return ImGuiKey_LeftArrow;
 		case RubyKey_UpArrow: return ImGuiKey_UpArrow;
-		case RubyKey_RightArrow: return ImGuiKey_RightShift;
+		case RubyKey_RightArrow: return ImGuiKey_RightArrow;
 		case RubyKey_DownArrow: return ImGuiKey_DownArrow;
 		case RubyKey_F1: return ImGuiKey_F1;
 		case RubyKey_F2: return ImGuiKey_F2;

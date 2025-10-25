@@ -1475,6 +1475,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
     }
     */
 
+    /* SATURN ENGINE MODIFIED*/
     // Back when we used to have a Depth image when presenting to the swapchain is this needed to be two.
     // However now can be set to one.
     constexpr int ATTACHMENT_COUNT = 1;
