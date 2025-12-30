@@ -1358,6 +1358,8 @@ ImGuiIO::ImGuiIO()
     ConfigDebugBeginReturnValueOnce = false;
     ConfigDebugBeginReturnValueLoop = false;
 
+    PendingFontBuild = false;
+
     // Inputs Behaviors
     MouseDoubleClickTime = 0.30f;
     MouseDoubleClickMaxDist = 6.0f;

@@ -2181,6 +2181,11 @@ struct ImGuiIO
     // Option to audit .ini data
     bool        ConfigDebugIniSettings;         // = false          // Save .ini data with extra comments (particularly helpful for Docking, but makes saving slower)
 
+    /* SATURN ENGINE MODIFIED */
+    // Saturn flag
+    bool PendingFontBuild; // = false
+    /* [ END OF MODIFIED ] */
+
     //------------------------------------------------------------------
     // Platform Functions
     // (the imgui_impl_xxxx backend files are setting those up for you)
