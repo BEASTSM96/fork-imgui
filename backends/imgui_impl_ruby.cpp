@@ -718,7 +718,9 @@ static void ImGui_ImplRuby_ShowWindow( ImGuiViewport* viewport )
     }
     else
     {
+#if defined( _WIN32 )
         ::ShowWindow( hwnd, SW_SHOWNA );
+#endif
     }
 }
 
