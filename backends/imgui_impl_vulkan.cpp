@@ -1481,6 +1481,23 @@ void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
     bd->VulkanInitInfo.MinImageCount = min_image_count;
 }
 
+/* SATURN ENGINE MODIFIED */
+
+struct ImageData
+{
+    VkImageView ImageView;
+    VkImageLayout Layout;
+    VkDescriptorSet Set;
+};
+
+using CacheKey = void*;
+
+static std::unordered_map< CacheKey, ImageData > DescriptorSetCache;
+
+/* [END OF MODIFED CODE] */
+
+// @0xsmft - 24/06/22 - Update so we can call the function every frame, and we don't allocate a new descriptor set.
+
 // Register a texture by creating a descriptor
 // FIXME: This is experimental in the sense that we are unsure how to best design/tackle this problem, please post to https://github.com/ocornut/imgui/pull/914 if you have suggestions.
 VkDescriptorSet ImGui_ImplVulkan_AddTexture(VkImageView image_view, VkImageLayout image_layout)
@@ -1489,16 +1506,27 @@ VkDescriptorSet ImGui_ImplVulkan_AddTexture(VkImageView image_view, VkImageLayou
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     VkDescriptorPool pool = bd->DescriptorPool ? bd->DescriptorPool : v->DescriptorPool;
 
-    // Create Descriptor Set:
-    VkDescriptorSet descriptor_set;
+    VkDescriptorSet descriptor_set  = nullptr;
+
+    auto itr = DescriptorSetCache.find( ( CacheKey ) image_view );
+    if( itr == DescriptorSetCache.end() )
     {
-        VkDescriptorSetAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = pool;
-        alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &bd->DescriptorSetLayoutTexture;
-        VkResult err = vkAllocateDescriptorSets(v->Device, &alloc_info, &descriptor_set);
-        check_vk_result(err);
+        // Create Descriptor Set:
+        {
+            VkDescriptorSetAllocateInfo alloc_info = {};
+            alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            alloc_info.descriptorPool = pool;
+            alloc_info.descriptorSetCount = 1;
+            alloc_info.pSetLayouts = &bd->DescriptorSetLayoutTexture;
+            VkResult err = vkAllocateDescriptorSets( v->Device, &alloc_info, &descriptor_set );
+            check_vk_result( err );
+        }
+
+        DescriptorSetCache[ ( CacheKey ) image_view ] = { .ImageView = image_view, .Layout = image_layout, .Set = descriptor_set };
+    }
+    else
+    {
+        descriptor_set = itr->second.Set;
     }
 
     // Update the Descriptor Set:

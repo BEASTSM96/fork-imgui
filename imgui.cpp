@@ -3144,6 +3144,18 @@ bool ImGuiTextFilter::Draw(const char* label, float width)
     return value_changed;
 }
 
+/* SATURN ENGINE MODIFIED */
+bool ImGuiTextFilter::DrawWithHint( const char* label /*= "Filter (inc,-exc)"*/, const char* hint, float width /*= 0.0f */ )
+{
+    if( width != 0.0f )
+        ImGui::SetNextItemWidth( width );
+    bool value_changed = ImGui::InputTextWithHint( label, hint, InputBuf, IM_COUNTOF( InputBuf ) );
+    if( value_changed )
+        Build();
+    return value_changed;
+}
+/* [END OF MODIFIED CODE] */
+
 void ImGuiTextFilter::ImGuiTextRange::split(char separator, ImVector<ImGuiTextRange>* out) const
 {
     out->resize(0);
