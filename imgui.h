@@ -29,12 +29,15 @@
 
 // Library Version
 // (Integer encoded as XYYZZ for use in #if preprocessor conditionals, e.g. '#if IMGUI_VERSION_NUM >= 12345')
-#define IMGUI_VERSION       "1.92.8 WIP"
+#define IMGUI_VERSION       "1.92.8 WIP (SAT)"
 #define IMGUI_VERSION_NUM   19275
 #define IMGUI_HAS_TABLE             // Added BeginTable() - from IMGUI_VERSION_NUM >= 18000
 #define IMGUI_HAS_TEXTURES          // Added ImGuiBackendFlags_RendererHasTextures - from IMGUI_VERSION_NUM >= 19198
 #define IMGUI_HAS_VIEWPORT          // In 'docking' WIP branch.
 #define IMGUI_HAS_DOCK              // In 'docking' WIP branch.
+/* SATURN ENGINE MODIFIED */
+#define IMGUI_HAS_STACK_LAYOUT      // Stack-Layout PR #846
+/* [END OF MODIFIED CODE] */
 
 /*
 
@@ -598,6 +601,19 @@ namespace ImGui
     IMGUI_API float         GetTextLineHeightWithSpacing();                                 // ~ FontSize + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of text)
     IMGUI_API float         GetFrameHeight();                                               // ~ FontSize + style.FramePadding.y * 2
     IMGUI_API float         GetFrameHeightWithSpacing();                                    // ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets)
+    /* SATURN ENGINE MODIFIED */
+    IMGUI_API void          BeginHorizontal( const char* str_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
+    IMGUI_API void          BeginHorizontal( const void* ptr_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
+    IMGUI_API void          BeginHorizontal( int id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1 );
+    IMGUI_API void          EndHorizontal();
+    IMGUI_API void          BeginVertical( const char* str_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
+    IMGUI_API void          BeginVertical( const void* ptr_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
+    IMGUI_API void          BeginVertical( int id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1 );
+    IMGUI_API void          EndVertical();
+    IMGUI_API void          Spring( float weight = 1.0f, float spacing = -1.0f );
+    IMGUI_API void          SuspendLayout();
+    IMGUI_API void          ResumeLayout();
+    /* [END OF MODIFIED CODE] */
 
     // ID stack/scopes
     // Read the FAQ (docs/FAQ.md or http://dearimgui.com/faq) for more details about how ID are handled in dear imgui.
@@ -1944,6 +1960,7 @@ enum ImGuiStyleVar_
     ImGuiStyleVar_SeparatorTextAlign,       // ImVec2    SeparatorTextAlign
     ImGuiStyleVar_SeparatorTextPadding,     // ImVec2    SeparatorTextPadding
     ImGuiStyleVar_DockingSeparatorSize,     // float     DockingSeparatorSize
+    ImGuiStyleVar_LayoutAlign,              // float     LayoutAlign
     ImGuiStyleVar_COUNT
 };
 
@@ -2427,14 +2444,15 @@ struct ImGuiStyle
     ImVec2      SeparatorTextPadding;       // Horizontal offset of text from each edge of the separator + spacing on other axis. Generally small values. .y is recommended to be == FramePadding.y.
     ImVec2      DisplayWindowPadding;       // Apply to regular windows: amount which we enforce to keep visible when moving near edges of your screen.
     ImVec2      DisplaySafeAreaPadding;     // Apply to every windows, menus, popups, tooltips: amount where we avoid displaying contents. Adjust if you cannot see the edges of your screen (e.g. on a TV where scaling has not been configured).
-    bool        DockingNodeHasCloseButton;  // Docking node has their own CloseButton() to close all docked windows.
     float       DockingSeparatorSize;       // Thickness of resizing border between docked windows
     float       MouseCursorScale;           // Scale software rendered mouse cursor (when io.MouseDrawCursor is enabled). We apply per-monitor DPI scaling over this scale. May be removed later.
+    bool        DockingNodeHasCloseButton;  // Docking node has their own CloseButton() to close all docked windows.
     bool        AntiAliasedLines;           // Enable anti-aliased lines/borders. Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
     bool        AntiAliasedLinesUseTex;     // Enable anti-aliased lines/borders using textures where possible. Require backend to render with bilinear filtering (NOT point/nearest filtering). Latched at the beginning of the frame (copied to ImDrawList).
     bool        AntiAliasedFill;            // Enable anti-aliased edges around filled shapes (rounded rectangles, circles, etc.). Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
     float       CurveTessellationTol;       // Tessellation tolerance when using PathBezierCurveTo() without a specific number of segments. Decrease for highly tessellated curves (higher quality, more polygons), increase to reduce quality.
     float       CircleTessellationMaxError; // Maximum error (in pixels) allowed when using AddCircle()/AddCircleFilled() or drawing rounded corner rectangles with no explicit segment count specified. Decrease for higher quality but more geometry.
+    float       LayoutAlign;                // Element alignment inside horizontal and vertical layouts (0.0f - left/top, 1.0f - right/bottom, 0.5f - center).
 
     // Colors
     ImVec4      Colors[ImGuiCol_COUNT];
