@@ -72,9 +72,9 @@
 #include <volk.h>
 #endif
 #else
-#include <vulkan/vulkan.h>
+#include <vulkan.h>
 #endif
-#if defined(VK_VERSION_1_3) || defined(VK_KHR_dynamic_rendering)
+#if defined(VK_VERSION_1_3) && defined(VK_KHR_dynamic_rendering)
 #define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #endif
 

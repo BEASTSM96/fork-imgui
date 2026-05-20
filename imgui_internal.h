@@ -629,6 +629,9 @@ struct IMGUI_API ImRect
     void        TranslateX(float dx)                { Min.x += dx; Max.x += dx; }
     void        TranslateY(float dy)                { Min.y += dy; Max.y += dy; }
     void        ClipWith(const ImRect& r)           { Min = ImMax(Min, r.Min); Max = ImMin(Max, r.Max); }                   // Simple version, may lead to an inverted rectangle, which is fine for Contains/Overlaps test but not for display.
+
+    void Floor()                                    { Min = ImFloor( Min ); Max = ImFloor( Max ); }
+
     void        ClipWithFull(const ImRect& r)       { Min = ImClamp(Min, r.Min, r.Max); Max = ImClamp(Max, r.Min, r.Max); } // Full version, ensure both points are fully clipped.
     bool        IsInverted() const                  { return Min.x > Max.x || Min.y > Max.y; }
     ImVec4      ToVec4() const                      { return ImVec4(Min.x, Min.y, Max.x, Max.y); }

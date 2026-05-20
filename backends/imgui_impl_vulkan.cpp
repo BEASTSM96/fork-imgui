@@ -1504,6 +1504,10 @@ VkDescriptorSet ImGui_ImplVulkan_AddTexture(VkImageView image_view, VkImageLayou
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+
+    if( !bd || !v )
+        return nullptr;
+
     VkDescriptorPool pool = bd->DescriptorPool ? bd->DescriptorPool : v->DescriptorPool;
 
     VkDescriptorSet descriptor_set  = nullptr;
