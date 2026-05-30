@@ -601,19 +601,6 @@ namespace ImGui
     IMGUI_API float         GetTextLineHeightWithSpacing();                                 // ~ FontSize + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of text)
     IMGUI_API float         GetFrameHeight();                                               // ~ FontSize + style.FramePadding.y * 2
     IMGUI_API float         GetFrameHeightWithSpacing();                                    // ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets)
-    /* SATURN ENGINE MODIFIED */
-    IMGUI_API void          BeginHorizontal( const char* str_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
-    IMGUI_API void          BeginHorizontal( const void* ptr_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
-    IMGUI_API void          BeginHorizontal( int id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1 );
-    IMGUI_API void          EndHorizontal();
-    IMGUI_API void          BeginVertical( const char* str_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
-    IMGUI_API void          BeginVertical( const void* ptr_id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1.0f );
-    IMGUI_API void          BeginVertical( int id, const ImVec2& size = ImVec2( 0, 0 ), float align = -1 );
-    IMGUI_API void          EndVertical();
-    IMGUI_API void          Spring( float weight = 1.0f, float spacing = -1.0f );
-    IMGUI_API void          SuspendLayout();
-    IMGUI_API void          ResumeLayout();
-    /* [END OF MODIFIED CODE] */
 
     // ID stack/scopes
     // Read the FAQ (docs/FAQ.md or http://dearimgui.com/faq) for more details about how ID are handled in dear imgui.
@@ -4493,6 +4480,11 @@ typedef ImFontAtlasRect ImFontAtlasCustomRect;
 #endif // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 #define IM_ARRAYSIZE                IM_COUNTOF                  // RENAMED IN 1.92.6: IM_ARRAYSIZE -> IM_COUNTOF
+
+#ifdef IMGUI_HAS_STACK_LAYOUT
+#include "imgui_stacklayout.h"
+#endif // IMGUI_HAS_STACK_LAYOUT
+
 
 // RENAMED IMGUI_DISABLE_METRICS_WINDOW > IMGUI_DISABLE_DEBUG_TOOLS in 1.88 (from June 2022)
 #ifdef IMGUI_DISABLE_METRICS_WINDOW
