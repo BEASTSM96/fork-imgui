@@ -32,6 +32,7 @@ struct ImGui_ImplRuby_Data
 	int                     MousePendingLeaveFrame;
 	int                     MouseButtonsDown;
 	ImGui_ImplRuby_MainEventHandler* EventHandler;
+    std::string             ClipboardData;
 
 	ImGui_ImplRuby_Data() { memset( this, 0, sizeof( *this ) ); }
 };
@@ -199,8 +200,8 @@ static const char* ImGui_ImplRuby_GetClipboardText( void* user_data )
 {
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 
-	const char* text = bd->Window->GetClipboardText();
-	return text;
+    bd->ClipboardData = bd->Window->GetClipboardText();
+	return bd->ClipboardData.c_str();
 }
 
 static void ImGui_ImplRuby_SetClipboardText( void* user_data, const char* text )
@@ -208,6 +209,7 @@ static void ImGui_ImplRuby_SetClipboardText( void* user_data, const char* text )
 	ImGui_ImplRuby_Data* bd = ImGui_ImplRuby_GetBackendData();
 
 	bd->Window->SetClipboardText( text );
+    bd->ClipboardData = text;
 }
 
 static ImGuiKey ImGui_ImplRuby_KeyToImGuiKey( int scancode )
